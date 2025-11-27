@@ -183,7 +183,6 @@ def infer(image_path, confidence_threshold=0.4, nms_threshold=0.4):
     landms = landms[inds]
     scores = scores[inds]
 
-    # order = scores.argsort()[::-1]
     order = np.argsort(scores)[::-1]
     boxes = boxes[order]
     landms = landms[order]
