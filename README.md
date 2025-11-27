@@ -31,7 +31,7 @@ python crop.py image.jpg # saves output to crop.jpg
 ![](./demo_images/2.jpg)
 ![](./demo_images/2_crop.jpg)
 
-![](./demo_images/3.jpg)
+![](./demo_images/3.jpeg)
 ![](./demo_images/3_crop.jpg)
 
 ![](./demo_images/4.jpg)
