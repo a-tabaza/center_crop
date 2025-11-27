@@ -5,6 +5,7 @@ Stripped down functionality from [Face Crop Plus](https://github.com/mantasu/fac
 # Why
 
 What I need: square image of one face from image of one face that is not square.
+
 What I don't need: 7GB venv with CUDA PyTorch dependencies.
 
 # How
