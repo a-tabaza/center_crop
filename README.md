@@ -21,7 +21,7 @@ uv pip install -r requirements.txt
 
 # Usage
 ```bash
-python crop.py image.jpg # saves output to crop.jpg
+python src/crop.py image.jpg # saves output to crop.jpg
 ```
 
 # Examples

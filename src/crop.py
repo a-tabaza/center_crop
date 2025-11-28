@@ -1,4 +1,4 @@
-import sys
+import argparse
 from math import ceil
 from itertools import product
 
@@ -9,13 +9,14 @@ from scipy.special import softmax
 
 INPUT_SIZE = [608, 640]
 
+
 class PriorBox(object):
     def __init__(
         self,
-        image_size,
-        min_sizes=[[16, 32], [64, 128], [256, 512]],
-        steps=[8, 16, 32],
-        clip=False,
+        image_size: list,
+        min_sizes: list = [[16, 32], [64, 128], [256, 512]],
+        steps: list = [8, 16, 32],
+        clip: bool = False,
     ):
         super(PriorBox, self).__init__()
         self.image_size = image_size
@@ -27,7 +28,7 @@ class PriorBox(object):
             for step in self.steps
         ]
 
-    def forward(self):
+    def forward(self) -> np.ndarray:
         anchors = []
         for k, f in enumerate(self.feature_maps):
             min_sizes = self.min_sizes[k]
@@ -48,7 +49,9 @@ class PriorBox(object):
         return output
 
 
-def pad_image(image, h, w, size, padvalue):
+def pad_image(
+    image: np.ndarray, h: int, w: int, size: list, padvalue: float
+) -> np.ndarray:
     pad_image = image.copy()
     pad_h = max(size[0] - h, 0)
     pad_w = max(size[1] - w, 0)
@@ -59,7 +62,9 @@ def pad_image(image, h, w, size, padvalue):
     return pad_image
 
 
-def resize_image(image, re_size, keep_ratio=True):
+def resize_image(
+    image: np.ndarray, re_size: list, keep_ratio: bool = True
+) -> tuple[: np.ndarray, float]:
     if not keep_ratio:
         re_image = cv2.resize(image, (re_size[0], re_size[1])).astype("float32")
         return re_image, 0, 0
@@ -77,7 +82,9 @@ def resize_image(image, re_size, keep_ratio=True):
     return re_image, resize_ratio
 
 
-def preprocess(img_raw, input_size):
+def preprocess(
+    img_raw: np.ndarray, input_size: list
+) -> tuple[np.ndarray, np.ndarray, float]:
     img = np.float32(img_raw)
     img, resize = resize_image(img, input_size)
     scale = np.array([img.shape[1], img.shape[0], img.shape[1], img.shape[0]])
@@ -87,7 +94,9 @@ def preprocess(img_raw, input_size):
     return img, scale, resize
 
 
-def decode(loc, priors, variances=[0.1, 0.2]):
+def decode(
+    loc: np.ndarray, priors: np.ndarray, variances: list = [0.1, 0.2]
+) -> np.ndarray:
     boxes = np.concatenate(
         (
             priors[:, :2] + loc[:, :2] * variances[0] * priors[:, 2:],
@@ -101,7 +110,9 @@ def decode(loc, priors, variances=[0.1, 0.2]):
     return boxes
 
 
-def decode_landm(pre, priors, variances=[0.1, 0.2]):
+def decode_landm(
+    pre: np.ndarray, priors: np.ndarray, variances: list = [0.1, 0.2]
+) -> np.ndarray:
     landms = np.concatenate(
         (
             priors[:, :2] + pre[:, :2] * variances[0] * priors[:, 2:],
@@ -115,7 +126,7 @@ def decode_landm(pre, priors, variances=[0.1, 0.2]):
     return landms
 
 
-def py_cpu_nms(dets, thresh):
+def py_cpu_nms(dets: np.ndarray, thresh: float) -> list:
     x1 = dets[:, 0]
     y1 = dets[:, 1]
     x2 = dets[:, 2]
@@ -143,7 +154,9 @@ def py_cpu_nms(dets, thresh):
     return keep
 
 
-def infer(image_path, confidence_threshold=0.4, nms_threshold=0.4):
+def infer(
+    image_path: str, confidence_threshold: float = 0.4, nms_threshold: float = 0.4
+) -> tuple[np.ndarray, np.ndarray]:
     img_raw = cv2.imread(image_path, cv2.IMREAD_COLOR)
     img, scale, resize = preprocess(img_raw, INPUT_SIZE)
     img = np.transpose(img, (0, 2, 3, 1))
@@ -196,14 +209,21 @@ def infer(image_path, confidence_threshold=0.4, nms_threshold=0.4):
     return dets, img_raw
 
 
-def is_square(img_path):
+def is_square(img_path: str) -> bool:
     img = cv2.imread(img_path, cv2.IMREAD_COLOR)
     im_height, im_width, _ = img.shape
     if im_height == im_width:
         return True
+    return False
 
 
-def crop_to_square(result, img):
+def crop_to_square(
+    img_path: str, output_path: str = None, save_to_file: bool = False
+) -> np.ndarray:
+    if is_square(img_path):
+        return cv2.imread(img_path, cv2.IMREAD_COLOR)
+
+    result, img = infer(img_path)
     x1, y1, x2, y2 = result[0][:4].astype(int).tolist()
     im_height, im_width, _ = img.shape
     square_size = min(im_height, im_width)
@@ -217,7 +237,9 @@ def crop_to_square(result, img):
             y1 - half_comp : y2 + half_comp,
             :,
         ]
-        cv2.imwrite("crop.jpg", cropped_image)
+        if save_to_file:
+            cv2.imwrite(output_path, cropped_image)
+        return cropped_image
 
     if not vertical:
         face_cropped_image = img[:, x1:x2]
@@ -228,12 +250,18 @@ def crop_to_square(result, img):
             :,
             x1 - half_comp : x2 + half_comp,
         ]
-        cv2.imwrite("crop.jpg", cropped_image)
+        if save_to_file:
+            cv2.imwrite(output_path, cropped_image)
+        return cropped_image
+
+
+def main(img_path: str, output_path: str):
+    crop_to_square(img_path=img_path, output_path=output_path, save_to_file=True)
 
 
 if __name__ == "__main__":
-    if not is_square(sys.argv[1]):
-        result, img = infer(sys.argv[1])
-        crop_to_square(result, img)
-    else:
-        print("image is square")
+    parser = argparse.ArgumentParser(description="FaceCropper")
+    parser.add_argument("-i", "--input_path")
+    parser.add_argument("-o", "--output_path")
+    args = parser.parse_args()
+    main(img_path=args.input_path, output_path=args.output_path)
