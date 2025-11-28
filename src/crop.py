@@ -261,7 +261,7 @@ def main(img_path: str, output_path: str):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="FaceCropper")
-    parser.add_argument("-i", "--input_path")
-    parser.add_argument("-o", "--output_path")
+    parser.add_argument("-i", "--input_path", required=True)
+    parser.add_argument("-o", "--output_path", required=True)
     args = parser.parse_args()
     main(img_path=args.input_path, output_path=args.output_path)
