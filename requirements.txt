@@ -2,3 +2,4 @@ numpy
 scipy
 onnxruntime
 opencv-python
+fastapi[standard]

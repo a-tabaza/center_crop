@@ -13,16 +13,56 @@ What I don't need: 7GB venv with CUDA PyTorch dependencies.
 Detects bbox of a face (one face) in the picture (using RetinaFace and ONNX for inference) then crops a square around it with the face being in the center (cv2 slicing).
 
 # Setup
+
+Local
+
 ```bash
 uv venv
 uv pip install -r requirements.txt
 . .venv/bin/activate
 ```
+Docker (API)
+
+```bash
+docker build -t cropper .
+docker run -d -p 8080:8080 cropper:latest
+```
+
+Go to ``localhost:8080/docs`` for SwaggerUI
 
 # Usage
+
+CLI
+
 ```bash
 python src/crop.py -i input.jpg -o output.jpg
 ```
+
+API
+
+Multiple images (result in .zip file)
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/crop/' \
+  -H 'accept: image/jpeg' \
+  -H 'Content-Type: multipart/form-data' \
+  -F 'files=@4.jpg;type=image/jpeg' \
+  -F 'files=@3.jpeg;type=image/jpeg' \
+  -F 'files=@2.jpg;type=image/jpeg' \
+  -F 'files=@1.jpg;type=image/jpeg'
+```
+
+One image (result back as jpg)
+
+```bash
+curl -X 'POST' \
+  'http://localhost:8080/crop/' \
+  -H 'accept: image/jpeg' \
+  -H 'Content-Type: multipart/form-data' \
+  -F 'files=@1.jpg;type=image/jpeg' \
+```
+
 
 # Examples
 ![](./demo_images/1.jpg)
