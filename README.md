@@ -23,9 +23,18 @@ uv pip install -r requirements.txt
 ```
 Docker (API)
 
+Build
+
 ```bash
 docker build -t cropper .
 docker run -d -p 8080:8080 cropper:latest
+```
+
+Pull
+
+```bash
+docker pull ghcr.io/a-tabaza/center_crop:main
+docker run -d -p 8080:8080 ghcr.io/a-tabaza/center_crop:main
 ```
 
 Go to ``localhost:8080/docs`` for SwaggerUI
