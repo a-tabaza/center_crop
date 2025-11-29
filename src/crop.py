@@ -50,7 +50,7 @@ class PriorBox(object):
 
 
 def pad_image(
-    image: np.ndarray, h: int, w: int, size: list, padvalue: float
+    image: np.ndarray, h: int, w: int, size: list, padvalue: tuple
 ) -> np.ndarray:
     pad_image = image.copy()
     pad_h = max(size[0] - h, 0)
