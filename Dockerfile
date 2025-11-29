@@ -1,4 +1,3 @@
-LABEL org.opencontainers.image.description "FaceCropper: Crops Faces"
 FROM python:3.12-slim
 
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
